@@ -18,7 +18,7 @@ func TestToken(t * testing.T) {
 	
 	Assert("encode and Decode are consistant", func (log sugar.Log) bool {
 		original := New()
-		if transcoded, err := Decode(encode(original)); err == nil {
+		if transcoded, err := Decode(original.Encode()); err == nil {
 			if original != transcoded {
 				log("%s != %d", original, transcoded)
 				return false
@@ -56,15 +56,10 @@ func TestToken(t * testing.T) {
 		return true
 	}).
 	
-	Assert("fmt.Stringer is implemented to return the encoded token", func (log sugar.Log) bool {
-		token := New()
-		return encode(token) == token.String()
-	}).
-	
 	Assert("maxHashInt(tokenLength int) returns tokens of the correct length", func (log sugar.Log) bool {
 		for i := MIN_TOKEN_LENGTH; i <= MAX_TOKEN_LENGTH; i++ {
-			min := encode(Token(maxHashInt(i - 1)))
-			max := encode(Token(maxHashInt(i) - 1))
+			min := Token(maxHashInt(i - 1)).Encode()
+			max := Token(maxHashInt(i) - 1).Encode()
 			if len(max) != i {
 				log("failed on max -> %d != len(%s)", i, max)
 				return false

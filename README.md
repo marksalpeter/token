@@ -5,8 +5,10 @@ This is a simple package for go that generates randomized base62 encoded tokens 
 ## How it Works
 
 `Token` is an alias for `uint64`.  
-Its implementation of the `fmt.Stringer` interface returns a `token.BASE62` encoded string based off of the number. 
-Its implementation of the `json.Marshaler` interface encodes and decoded the `token.Token` to and from the same `token.BASE62` encoded string representation.  
+Its `Token.Encode()` method interface returns a `BASE62` encoded string based off of the number.  
+Its implementation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same 
+`BASE62` encoded string representation.
+Its implementation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same `BASE62` encoded string representation.  
 
 Basically, the outside world will always address the token as its string equivolent and internally we can always be used as an `uint64` for fast, indexed, unique, lookups in various databases.
 
