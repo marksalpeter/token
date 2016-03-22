@@ -28,7 +28,7 @@ const (
 	Base62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 	// MaxTokenLength is the largest possible character length of a token
-	MaxTokenLength = 11
+	MaxTokenLength = 10
 
 	// MinTokenLength is the smallest possible character length of a token
 	MinTokenLength = 1
