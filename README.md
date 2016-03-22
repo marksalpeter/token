@@ -1,16 +1,16 @@
 #Token
 
-This is a simple package for go that generates randomized base62 encoded tokens based on a single integer. It's ideal for shorturl services or for semi-secured randomized api primary keys.
+This is a simple package for go that generates randomized base62 encoded tokens based on an integer. It's ideal for short url service or for any short, unique, randomized tokens you need to use throughout your app.
 
 ## How it Works
 
-`Token` is an alias for `uint64`.  
-Its `Token.Encode()` method interface returns a `BASE62` encoded string based off of the number.  
-Its implementation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same 
-`BASE62` encoded string representation.
-Its implementation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same `BASE62` encoded string representation.  
+`Token` is an alias for `uint64`.
 
-Basically, the outside world will always address the token as its string equivolent and internally we can always be used as an `uint64` for fast, indexed, unique, lookups in various databases.
+The `Token.Encode()` method returns a base62 encoded string based off of the uint64.
+
+`Token` implements the `json.Marshaler` interface to encodes and decoded to and from the base62 string representation of the `uint64`
+
+Basically, the outside world will always see the token as a base62 encoded string, but in your app you will always be able to use the token as a `uint64` for fast, indexed, unique, lookups in various databases.
 
 **IMPORTANT:** Remember to always check for collisions when adding randomized tokens to a database
 
@@ -21,32 +21,38 @@ package main
 
 import (
 	"fmt"
-	"github.com/marksalpeter/token"	
+	"github.com/marksalpeter/token"
 )
 
 type Model struct {
-    ID	token.Token
+    ID	token.Token `json:"id"`
 }
 
 func main() {
+	// create a new model
 	model := Model {
-		ID:	token.New(),
+		ID:	token.New(), // creates a new, random uint64 token
 	}
-	var unmarshaled Model
-	marshaled, _ := json.Marshal(&model)
-	json.Unmarshal(marshaled, &unmarshaled)
+	fmt.Println(model.ID)          // 2751173559858
+	fmt.Println(model.ID.Encode()) // Mr1NSSu
 
-	fmt.Println(uint64(model.ID))		// 2751173559858
-	fmt.Println(model.ID)				// Mr1NSSu
-	fmt.Println(string(marshaled))		// {"ID":"Mr1NSSu"}
-	fmt.Println(uint64(unmarshaled.ID))	// 2751173559858
+	// encode the model as json
+	marshaled, err := json.Marshal(&model)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(marshaled)) // {"id":"Mr1NSSu"}
+
+	// decode the model
+	var unmarshaled Model
+	if err := json.Unmarshal(marshaled, &unmarshaled); err != nil {
+		panic(err)
+	}
+	fmt.Println(unmarshaled.ID)    // 2751173559858
+
 }
 ```
 
-You can see it in action here:  
-// TODO: add a link when it goes public
-
 ## Special Mentions
 
-Special thanks to [@einsteinx2](https://github.com/einsteinx2). The encode and decode functions are ported from a shorturl project of his and he graciously allowed me to publish them.
-// TODO: get permission from ben to publish this
+Special thanks to [@einsteinx2](https://github.com/einsteinx2). The encode and decode functions are ported from a short url project of his and he graciously allowed me to publish them.

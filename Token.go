@@ -1,141 +1,149 @@
 package token
 
-// This is a simple package for go that generates randomized base62 encoded tokens based on a single integer. 
+// This is a simple package for go that generates randomized base62 encoded tokens based on a single integer.
 // It's ideal for shorturl services or for semi-secured randomized api primary keys.
 //
 // How it Works
 //
-// `Token` is an alias for `uint64`.  
-// Its `Token.Encode()` method interface returns a `BASE62` encoded string based off of the number.  
-// Its implementation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same 
-// `BASE62` encoded string representation.
+// `Token` is an alias for `uint64`.
+// Its `Token.Encode()` method interface returns a `Base62` encoded string based off of the number.
+// Its implementation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same
+// `Base62` encoded string representation.
 //
-// Basically, the outside world will always address the token as its string equivolent and internally we can 
+// Basically, the outside world will always address the token as its string equivolent and internally we can
 // always be used as an `uint64` for fast, indexed, unique, lookups in various databases.
 //
 // **IMPORTANT:** Remember to always check for collisions when adding randomized tokens to a database
 
 import (
+	"bytes"
+	"fmt"
 	"math"
 	"math/rand"
-	"fmt"
-	"bytes"
 	"time"
-	"errors"
 )
 
 const (
-	BASE62					= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	DEFAULT_TOKEN_LENGTH	= 7
-	MAX_TOKEN_LENGTH 		= 11
-	MIN_TOKEN_LENGTH 		= 1
+	// Base62 is a string respresentation of every possible base62 character
+	Base62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	// MaxTokenLength is the largest possible character length of a token
+	MaxTokenLength = 11
+
+	// MinTokenLength is the smallest possible character length of a token
+	MinTokenLength = 1
+
+	// DefaultTokenLength is the default size of a token
+	DefaultTokenLength = MaxTokenLength
 )
 
 var (
-	base62Len				= len(BASE62)
+	base62Len = uint64(len(Base62))
 )
 
-// this is an alias of an int64 that is json marshalled into a base62 encoded token
+// Token is an alias of an int64 that is json marshalled into a base62 encoded token
 type Token uint64
 
-// encodes the token into a base62 string
-func (t Token) Encode () string {
-	number	:= uint64(t)
+// Encode encodes the token into a base62 string
+func (t Token) Encode() string {
+	number := uint64(t)
 	if number == 0 {
 		return ""
-    }
-	
-    chars 	:= make([]byte, 0)
-    length	:= uint64(len(BASE62))
-
-	for number > 0 {
-		result    := number / length
-		remainder := number % length
-		chars   = append(chars, BASE62[remainder])		
-		number  = result
 	}
 
-	for i, j := 0, len(chars) - 1; i < j; i, j = i + 1, j - 1 {
+	var chars []byte
+	for number > 0 {
+		result := number / base62Len
+		remainder := number % base62Len
+		chars = append(chars, Base62[remainder])
+		number = result
+	}
+
+	for i, j := 0, len(chars)-1; i < j; i, j = i+1, j-1 {
 		chars[i], chars[j] = chars[j], chars[i]
 	}
 
-    return string(chars)
+	return string(chars)
 }
 
-// implements the `json.Marsheler` interface to decode the token from a base62 string back into an int64
+// UnmarshalJSON implements the `json.Marsheler` interface to decode the token from a base62 string back into an int64
 func (t *Token) UnmarshalJSON(data []byte) error {
-	length		:= len(data)
-	str			:= string(data)
-	isString	:= (str[0] == '"' || str[0] == '\'') && (str[length - 1] == '"' || str[length - 1] == '\'')
-	if isString {
-		if decoded, err := Decode(str[1:length - 1]); err == nil {
-			*t = decoded
-			return nil
-		} else {
-			return err
-		}
-	} else {
-		return errors.New("attempted to parse a non-string token") 
+	str := string(data)
+	strLen := len(data)
+
+	// return an error if the json was not a valid string representation of the token
+	isString := (str[0] == '"' || str[0] == '\'') && (str[strLen-1] == '"' || str[strLen-1] == '\'')
+	if !isString {
+		return fmt.Errorf("attempted to parse a non-string token")
 	}
+
+	// decode the token
+	decoded, err := Decode(str[1 : strLen-1])
+	if err != nil {
+		return err
+	}
+
+	// the token was successfully decoded
+	*t = decoded
+	return nil
 }
 
-// implements the `json.Marsheler` interface to encode the token into a base62 string
+// MarshalJSON implements the `json.Marsheler` interface to encode the token into a base62 string
 func (t Token) MarshalJSON() ([]byte, error) {
 	token := t.Encode()
 	if token == "" {
 		return []byte{}, nil
-	} else {
-	    return []byte("\"" + t.Encode() + "\""), nil		
 	}
+	return []byte("\"" + t.Encode() + "\""), nil
 }
 
-// returns a `BASE62` encoded `Token` of *up to* `DEFAULT_TOKEN_LENGTH`  
-// if you pass in a `tokenLength` between `MIN_TOKEN_LENGTH` and `MAX_TOKEN_LENGTH` this will return 
+// New returns a `Base62` encoded `Token` of *up to* `DefaultTokenLength`
+// if you pass in a `tokenLength` between `MinTokenLength` and `MaxTokenLength` this will return
 // a `Token` of *up to* that length instead if you pass in a `tokenLength` that is out of range it will panic
 func New(tokenLength ...int) Token {
-	
+
 	// calculate the max hash int based on the token length
 	var max uint64
 	if tokenLength != nil {
-		isInRange := tokenLength[0] >= MIN_TOKEN_LENGTH && tokenLength[0] <= MAX_TOKEN_LENGTH 
+		isInRange := tokenLength[0] >= MinTokenLength && tokenLength[0] <= MaxTokenLength
 		if isInRange {
 			max = maxHashInt(tokenLength[0])
 		} else {
-			panic(fmt.Sprintf("tokenLength ∉ [%d,%d]", MIN_TOKEN_LENGTH, MAX_TOKEN_LENGTH))
+			panic(fmt.Errorf("tokenLength ∉ [%d,%d]", MinTokenLength, MaxTokenLength))
 			return Token(0)
-		}	
+		}
 	} else {
-		max = maxHashInt(DEFAULT_TOKEN_LENGTH)
+		max = maxHashInt(DefaultTokenLength)
 	}
-	
+
 	// generate a psuedo random token
 	rand.Seed(time.Now().UTC().UnixNano())
 	number := uint64(rand.Int63n(int64(max & math.MaxInt64)))
-	
+
 	return Token(number)
 }
 
-// returns a token from a 1-12 character base62 encoded string
+// Decode returns a token from a 1-12 character base62 encoded string
 func Decode(token string) (Token, error) {
-	
-    number := uint64(0)
-    idx    := 0.0
-    chars  := []byte(BASE62)
+
+	number := uint64(0)
+	idx := 0.0
+	chars := []byte(Base62)
 
 	charsLength := float64(len(chars))
 	tokenLength := float64(len(token))
-	
-	if tokenLength > MAX_TOKEN_LENGTH {
-		return Token(0), errors.New(fmt.Sprintf("%d > MAX_TOKEN_LENGTH (%d)", int(tokenLength), MAX_TOKEN_LENGTH))
-	} else if tokenLength < MIN_TOKEN_LENGTH {
-		return Token(0), errors.New(fmt.Sprintf("%d < MIN_TOKEN_LENGTH (%d)", int(tokenLength), MIN_TOKEN_LENGTH))
+
+	if tokenLength > MaxTokenLength {
+		return Token(0), fmt.Errorf("%d > MaxTokenLength (%d)", int(tokenLength), MaxTokenLength)
+	} else if tokenLength < MinTokenLength {
+		return Token(0), fmt.Errorf("%d < MinTokenLength (%d)", int(tokenLength), MinTokenLength)
 	}
 
 	for _, c := range []byte(token) {
 		power := tokenLength - (idx + 1)
 		index := bytes.IndexByte(chars, c)
 		if index < 0 {
-			return Token(0), errors.New(fmt.Sprintf("%q is not present in %s", c, BASE62))
+			return Token(0), fmt.Errorf("%q is not present in %s", c, Base62)
 		}
 		number += uint64(index) * uint64(math.Pow(charsLength, power))
 		idx++
@@ -144,7 +152,7 @@ func Decode(token string) (Token, error) {
 	return Token(number), nil
 }
 
-// returns the largest possible int that will yeild a base62 encoded token of the specified length
+// maxHashInt returns the largest possible int that will yeild a base62 encoded token of the specified length
 func maxHashInt(length int) uint64 {
 	return uint64(math.Max(0, math.Min(math.MaxUint64, math.Pow(float64(base62Len), float64(length)))))
 }
