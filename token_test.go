@@ -3,7 +3,6 @@ package token
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/marksalpeter/sugar"
@@ -83,7 +82,7 @@ func TestToken(t *testing.T) {
 					isPaniced = isPaniced && true
 				}
 			}()
-			New(tokenLength - 1)
+			New(tokenLength)
 		}
 		testTokenLength(MinTokenLength - 1)
 		testTokenLength(MaxTokenLength + 1)
@@ -92,38 +91,34 @@ func TestToken(t *testing.T) {
 
 	s.Assert("json.Marsheler is implemented to encode tokens as base62 strings and decode base62 strings back into tokens", func(log sugar.Log) bool {
 
-		var token = New()
-		var test = Test{
-			Token:    New(),
-			NilToken: &token,
+		var unmarshaledTest Test
+		test := Test{
+			Token: New(),
+			NilToken: func(token Token) *Token {
+				return &token
+			}(New()),
 		}
-		testRegexp := regexp.MustCompile(fmt.Sprintf("\"Token\":\"%s\",\"NilToken\":\"%s\"", test.Token, test.NilToken))
+		marshaledTest := fmt.Sprintf(
+			`{"Token":"%s","NilToken":"%s"}`,
+			test.Token.Encode(),
+			test.NilToken.Encode(),
+		)
 
-		// encoding
-		if bytes, err := json.Marshal(&test); err == nil {
-			if !testRegexp.Match(bytes) {
-				log("%+v != %s", test, bytes)
-				return false
-			}
-
-			// decoding
-			var unmarshal Test
-			if err := json.Unmarshal(bytes, &unmarshal); err == nil {
-				if test.Token != unmarshal.Token || *test.NilToken != *unmarshal.NilToken {
-					log("%+v != %+v (expected)", unmarshal, test)
-					return false
-				}
-			} else {
-				log("decoding failed: %s", err)
-				return false
-			}
-
-		} else {
-			log("encoding failed: %s", err)
+		if bytes, err := json.Marshal(&test); err != nil {
+			// failed to encode
+			log(err)
 			return false
+		} else if !log.Compare(bytes, marshaledTest) {
+			// faild to encode correcty
+			return false
+		} else if err := json.Unmarshal(bytes, &unmarshaledTest); err != nil {
+			// failed to unmarshal
+			log(err)
+			return false
+		} else {
+			return log.Compare(unmarshaledTest, test)
 		}
 
-		return true
 	})
 
 	s.Assert("json.Marsheler.UnmarshalJson returns errors when tokens are not valid", func(log sugar.Log) bool {
@@ -139,14 +134,14 @@ func TestToken(t *testing.T) {
 		// the token is larger than MAX_TOKEN_LENGTH
 		tokenTooBig := `{"Token":"sfnalsdasdkasdnaerlaraksfnmaslrasdasadsadas"}`
 		if err := json.Unmarshal([]byte(tokenTooBig), &test); err == nil {
-			log("tokens larger that MAX_TOKEN_LENGTH don't throw an error")
+			log("tokens larger that MaxTokenLength don't throw an error")
 			return false
 		}
 
 		// the token is smaller than MIN_TOKEN_LENGTH
 		tokenTooSmall := `{"Token":""}`
 		if err := json.Unmarshal([]byte(tokenTooSmall), &test); err == nil {
-			log("tokens larger that MAX_TOKEN_LENGTH don't throw an error")
+			log("tokens larger that MaxTokenLength don't throw an error")
 			return false
 		}
 
