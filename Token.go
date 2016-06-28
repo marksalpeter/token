@@ -66,16 +66,10 @@ func (t Token) Encode() string {
 	return string(chars)
 }
 
-// UnmarshalJSON implements the `json.Marsheler` interface to decode the token from a base62 string back into an int64
-func (t *Token) UnmarshalJSON(data []byte) error {
+// UnmarshalText implements the `encoding.TextMarshaler` interface
+func (t *Token) UnmarshalText(data []byte) error {
 	str := string(data)
 	strLen := len(data)
-
-	// return an error if the json was not a valid string representation of the token
-	isString := (str[0] == '"' || str[0] == '\'') && (str[strLen-1] == '"' || str[strLen-1] == '\'')
-	if !isString {
-		return fmt.Errorf("attempted to parse a non-string token")
-	}
 
 	// decode the token
 	decoded, err := Decode(str[1 : strLen-1])
@@ -88,13 +82,9 @@ func (t *Token) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implements the `json.Marsheler` interface to encode the token into a base62 string
-func (t Token) MarshalJSON() ([]byte, error) {
-	token := t.Encode()
-	if token == "" {
-		return []byte{}, nil
-	}
-	return []byte("\"" + t.Encode() + "\""), nil
+// MarshalText implements the `encoding.TextMarsheler` interface
+func (t Token) MarshalText() ([]byte, error) {
+	return []byte(t.Encode()), nil
 }
 
 // New returns a `Base62` encoded `Token` of *up to* `DefaultTokenLength`
@@ -110,7 +100,6 @@ func New(tokenLength ...int) Token {
 			max = maxHashInt(tokenLength[0])
 		} else {
 			panic(fmt.Errorf("tokenLength ∉ [%d,%d]", MinTokenLength, MaxTokenLength))
-			return Token(0)
 		}
 	} else {
 		max = maxHashInt(DefaultTokenLength)
