@@ -7,7 +7,7 @@ package token
 //
 // `Token` is an alias for `uint64`.
 // Its `Token.Encode()` method interface returns a `Base62` encoded string based off of the number.
-// Its implementation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same
+// Its implementgation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same
 // `Base62` encoded string representation.
 //
 // Basically, the outside world will always address the token as its string equivolent and internally we can
@@ -46,12 +46,50 @@ type Token uint64
 
 // Encode encodes the token into a base62 string
 func (t Token) Encode() string {
-	number := uint64(t)
-	if number == 0 {
-		return ""
+	bs, _ := t.MarshalText()
+	return string(bs)
+}
+
+// UnmarshalText implements the `encoding.TextMarshaler` interface
+func (t *Token) UnmarshalText(data []byte) error {
+
+	number := uint64(0)
+	idx := 0.0
+	chars := []byte(Base62)
+
+	charsLength := float64(len(chars))
+	tokenLength := float64(len(data))
+
+	if tokenLength > MaxTokenLength {
+		return fmt.Errorf("%d > MaxTokenLength (%d)", int(tokenLength), MaxTokenLength)
+	} else if tokenLength < MinTokenLength {
+		return fmt.Errorf("%d < MinTokenLength (%d)", int(tokenLength), MinTokenLength)
 	}
 
+	for _, c := range data {
+		power := tokenLength - (idx + 1)
+		index := bytes.IndexByte(chars, c)
+		if index < 0 {
+			return fmt.Errorf("%q is not present in %s", c, Base62)
+		}
+		number += uint64(index) * uint64(math.Pow(charsLength, power))
+		idx++
+	}
+
+	// the token was successfully decoded
+	*t = Token(number)
+	return nil
+}
+
+// MarshalText implements the `encoding.TextMarsheler` interface
+func (t Token) MarshalText() ([]byte, error) {
+	number := uint64(t)
 	var chars []byte
+
+	if number == 0 {
+		return chars, nil
+	}
+
 	for number > 0 {
 		result := number / base62Len
 		remainder := number % base62Len
@@ -63,28 +101,7 @@ func (t Token) Encode() string {
 		chars[i], chars[j] = chars[j], chars[i]
 	}
 
-	return string(chars)
-}
-
-// UnmarshalText implements the `encoding.TextMarshaler` interface
-func (t *Token) UnmarshalText(data []byte) error {
-	str := string(data)
-	strLen := len(data)
-
-	// decode the token
-	decoded, err := Decode(str[1 : strLen-1])
-	if err != nil {
-		return err
-	}
-
-	// the token was successfully decoded
-	*t = decoded
-	return nil
-}
-
-// MarshalText implements the `encoding.TextMarsheler` interface
-func (t Token) MarshalText() ([]byte, error) {
-	return []byte(t.Encode()), nil
+	return chars, nil
 }
 
 // New returns a `Base62` encoded `Token` of *up to* `DefaultTokenLength`
@@ -114,31 +131,9 @@ func New(tokenLength ...int) Token {
 
 // Decode returns a token from a 1-12 character base62 encoded string
 func Decode(token string) (Token, error) {
-
-	number := uint64(0)
-	idx := 0.0
-	chars := []byte(Base62)
-
-	charsLength := float64(len(chars))
-	tokenLength := float64(len(token))
-
-	if tokenLength > MaxTokenLength {
-		return Token(0), fmt.Errorf("%d > MaxTokenLength (%d)", int(tokenLength), MaxTokenLength)
-	} else if tokenLength < MinTokenLength {
-		return Token(0), fmt.Errorf("%d < MinTokenLength (%d)", int(tokenLength), MinTokenLength)
-	}
-
-	for _, c := range []byte(token) {
-		power := tokenLength - (idx + 1)
-		index := bytes.IndexByte(chars, c)
-		if index < 0 {
-			return Token(0), fmt.Errorf("%q is not present in %s", c, Base62)
-		}
-		number += uint64(index) * uint64(math.Pow(charsLength, power))
-		idx++
-	}
-
-	return Token(number), nil
+	var t Token
+	err := (&t).UnmarshalText([]byte(token))
+	return t, err
 }
 
 // maxHashInt returns the largest possible int that will yeild a base62 encoded token of the specified length
