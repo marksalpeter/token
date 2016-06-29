@@ -17,7 +17,6 @@ package token
 
 import (
 	"bytes"
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -61,16 +60,16 @@ func (t *Token) UnmarshalText(data []byte) error {
 	tokenLength := float64(len(data))
 
 	if tokenLength > MaxTokenLength {
-		return fmt.Errorf("%d > MaxTokenLength (%d)", int(tokenLength), MaxTokenLength)
+		return ErrTokenTooBig
 	} else if tokenLength < MinTokenLength {
-		return fmt.Errorf("%d < MinTokenLength (%d)", int(tokenLength), MinTokenLength)
+		return ErrTokenTooSmall
 	}
 
 	for _, c := range data {
 		power := tokenLength - (idx + 1)
 		index := bytes.IndexByte(chars, c)
 		if index < 0 {
-			return fmt.Errorf("%q is not present in %s", c, Base62)
+			return ErrInvalidCharacter
 		}
 		number += uint64(index) * uint64(math.Pow(charsLength, power))
 		idx++
@@ -111,15 +110,14 @@ func New(tokenLength ...int) Token {
 
 	// calculate the max hash int based on the token length
 	var max uint64
-	if tokenLength != nil {
-		isInRange := tokenLength[0] >= MinTokenLength && tokenLength[0] <= MaxTokenLength
-		if isInRange {
-			max = maxHashInt(tokenLength[0])
-		} else {
-			panic(fmt.Errorf("tokenLength ∉ [%d,%d]", MinTokenLength, MaxTokenLength))
-		}
-	} else {
+	if tokenLength == nil {
 		max = maxHashInt(DefaultTokenLength)
+	} else if tl := tokenLength[0]; tl < MinTokenLength {
+		panic(ErrTokenTooSmall)
+	} else if tl > MaxTokenLength {
+		panic(ErrTokenTooBig)
+	} else {
+		max = maxHashInt(tl)
 	}
 
 	// generate a psuedo random token
