@@ -7,8 +7,8 @@ package token
 //
 // `Token` is an alias for `uint64`.
 // Its `Token.Encode()` method interface returns a `Base62` encoded string based off of the number.
-// Its implementgation of the `json.Marshaler` interface encodes and decoded the `Token` to and from the same
-// `Base62` encoded string representation.
+// Its implementation of the `encoding.TextMarshaler` and `encoding.TextUnmarshaler` interfaces encodes and
+// decodes the `Token` when its being marshalled or unmarshalled as json or xml.
 //
 // Basically, the outside world will always address the token as its string equivolent and internally we can
 // always be used as an `uint64` for fast, indexed, unique, lookups in various databases.
@@ -41,7 +41,7 @@ var (
 	base62Len = uint64(len(Base62))
 )
 
-// Token is an alias of an int64 that is json marshalled into a base62 encoded token
+// Token is an alias of an uint64 that is marshalled into a base62 encoded token
 type Token uint64
 
 // Encode encodes the token into a base62 string
@@ -50,7 +50,7 @@ func (t Token) Encode() string {
 	return string(bs)
 }
 
-// UnmarshalText implements the `encoding.TextMarshaler` interface
+// UnmarshalText implements the `encoding.TextUnmarshaler` interface
 func (t *Token) UnmarshalText(data []byte) error {
 
 	number := uint64(0)

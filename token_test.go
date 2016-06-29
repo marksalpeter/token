@@ -131,17 +131,17 @@ func TestToken(t *testing.T) {
 			return false
 		}
 
-		// the token is larger than MAX_TOKEN_LENGTH
+		// the token is larger than MaxTokenLength
 		tokenTooBig := `{"Token":"sfnalsdasdkasdnaerlaraksfnmaslrasdasadsadas"}`
 		if err := json.Unmarshal([]byte(tokenTooBig), &test); err == nil {
 			log("tokens larger that MaxTokenLength don't throw an error")
 			return false
 		}
 
-		// the token is smaller than MIN_TOKEN_LENGTH
+		// the token is smaller than MinTokenLength
 		tokenTooSmall := `{"Token":""}`
 		if err := json.Unmarshal([]byte(tokenTooSmall), &test); err == nil {
-			log("tokens larger that MaxTokenLength don't throw an error")
+			log("tokens smaller that MinTokenLength don't throw an error")
 			return false
 		}
 

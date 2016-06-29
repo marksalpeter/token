@@ -1,6 +1,6 @@
 #Token
 
-This is a simple package for go that generates randomized base62 encoded tokens based on an integer. It's ideal for short url service or for any short, unique, randomized tokens you need to use throughout your app.
+This is a simple package for go that generates randomized base62 encoded tokens based on an integer. It's ideal for short url services or for any short, unique, randomized tokens you need to use throughout your app.
 
 ## How it Works
 
@@ -8,7 +8,7 @@ This is a simple package for go that generates randomized base62 encoded tokens 
 
 The `Token.Encode()` method returns a base62 encoded string based off of the uint64.
 
-`Token` implements the `json.Marshaler` interface to encodes and decoded to and from the base62 string representation of the `uint64`
+`Token` implements the `encoding.TextMarshaler` and `encoding.TextUnmarshaler` interfaces to encode and decode to and from the base62 string representation of the `uint64`
 
 Basically, the outside world will always see the token as a base62 encoded string, but in your app you will always be able to use the token as a `uint64` for fast, indexed, unique, lookups in various databases.
 
