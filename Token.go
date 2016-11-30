@@ -40,6 +40,11 @@ var (
 	base62Len = uint64(len(Base62))
 )
 
+// init initializes the random number generator
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
+
 // Token is an alias of an uint64 that is marshalled into a base62 encoded token
 type Token uint64
 
@@ -121,7 +126,6 @@ func New(tokenLength ...int) Token {
 	}
 
 	// generate a psuedo random token
-	rand.Seed(time.Now().UTC().UnixNano())
 	number := uint64(rand.Int63n(int64(max & math.MaxInt64)))
 
 	return Token(number)
