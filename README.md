@@ -1,3 +1,5 @@
+[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](http://godoc.org/github.com/marksalpeter/token)
+
 This is a simple package for go that generates randomized base62 encoded tokens based on an integer. It's ideal for short url services or for any short, unique, randomized tokens you need to use throughout your app.
 
 ## How it Works
