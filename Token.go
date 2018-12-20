@@ -24,7 +24,7 @@ import (
 
 const (
 	// Base62 is a string respresentation of every possible base62 character
-	Base62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	Base62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 	// MaxTokenLength is the largest possible character length of a token
 	MaxTokenLength = 10
