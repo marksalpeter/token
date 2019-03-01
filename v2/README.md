@@ -1,4 +1,4 @@
-[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](http://godoc.org/github.com/marksalpeter/token)
+[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](http://godoc.org/github.com/marksalpeter/token/v2)
 
 This is a simple package for go that generates randomized base62 encoded tokens based on an integer. It's ideal for short url services or for any short, unique, randomized tokens you need to use throughout your app.
 
@@ -6,7 +6,7 @@ This is a simple package for go that generates randomized base62 encoded tokens 
 
 `Token` is an alias for `uint64`.
 
-The `Token.Encode()` method returns a base62 encoded string based off of the uint64.
+The `Token.Encode()` method returns a base62 encoded string based off of the uint64. The string will always be in the same sort order as the uint64.
 
 `Token` implements the `encoding.TextMarshaler` and `encoding.TextUnmarshaler` interfaces to encode and decode to and from the base62 string representation of the `uint64`
 
@@ -16,7 +16,7 @@ Basically, the outside world will always see the token as a base62 encoded strin
 
 ## Example
 
-```go  
+```go
 package main
 
 import (
@@ -55,6 +55,6 @@ func main() {
 
 ## Special Mentions
 
-Special thanks to [@einsteinx2](https://github.com/einsteinx2). The encode and decode functions are ported from a short url project of his and he graciously allowed me to publish them. 
+Special thanks to [@einsteinx2](https://github.com/einsteinx2). The encode and decode functions are ported from a short url project of his and he graciously allowed me to publish them.
 
 Special thanks to [@sudhirj](https://github.com/sudhirj) for encorperating lexical sort order of the tokens into the package.
