@@ -7,11 +7,11 @@ The order of the `Base62` characters have been changed in `v2` so that the `stri
 
 ### References
 
-https://github.com/ulid/spec
-
 https://instagram-engineering.com/sharding-ids-at-instagram-1cf5a71e5a5c
 
 https://developer.twitter.com/en/docs/basics/twitter-ids.html
+
+https://github.com/ulid/spec
 
 ---
 
