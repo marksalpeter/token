@@ -21,7 +21,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/marksalpeter/token"
+	"github.com/marksalpeter/token/v2"
 )
 
 type Model struct {
