@@ -1,4 +1,4 @@
-# Use Version 2 Instead 
+# Use v2 Instead 
 **Warning: Breaking Changes**
 
 Version 2 of this package is ready for production use. [You can find it here.](https://github.com/marksalpeter/token/blob/master/v2)
