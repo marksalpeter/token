@@ -1,13 +1,16 @@
-# Version 2
+# Use Version 2 Instead 
+**Warning: Breaking Changes**
 
-Version 2 of this package is ready for production use. [You can find it here.](https://github.com/marksalpeter/token/v2)
+Version 2 of this package is ready for production use. [You can find it here.](https://github.com/marksalpeter/token/blob/master/v2)
 
 The order of the `Base62` characters have been changed in `v2` so that the string representation of the `Token` and the `int` representation of the token are in the same sort order. This is useful when scaling your app or using NoSQL solutions. Special thanks to [@sudhirj](https://github.com/sudhirj) for the suggestion.
 
 ### References
 
 https://github.com/ulid/spec
+
 https://instagram-engineering.com/sharding-ids-at-instagram-1cf5a71e5a5c
+
 https://developer.twitter.com/en/docs/basics/twitter-ids.html
 
 ---
