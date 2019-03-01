@@ -55,4 +55,6 @@ func main() {
 
 ## Special Mentions
 
-Special thanks to [@einsteinx2](https://github.com/einsteinx2). The encode and decode functions are ported from a short url project of his and he graciously allowed me to publish them.
+Special thanks to [@einsteinx2](https://github.com/einsteinx2). The encode and decode functions are ported from a short url project of his and he graciously allowed me to publish them. 
+
+Special thanks to [@sudhirj](https://github.com/sudhirj) for encorperating lexical sort order of the tokens into the package.
