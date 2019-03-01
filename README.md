@@ -3,7 +3,7 @@
 
 Version 2 of this package is ready for production use. [You can find it here.](https://github.com/marksalpeter/token/blob/master/v2)
 
-The order of the `Base62` characters have been changed in `v2` so that the string representation of the `Token` and the `int` representation of the token are in the same sort order. This is useful when scaling your app or using NoSQL solutions. Special thanks to [@sudhirj](https://github.com/sudhirj) for the suggestion.
+The order of the `Base62` characters have been changed in `v2` so that the `string` representation of the `Token` and the `int` representation of the token are in the same sort order. This is useful when scaling your app or using NoSQL solutions. Special thanks to [@sudhirj](https://github.com/sudhirj) for the suggestion.
 
 ### References
 
