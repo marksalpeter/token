@@ -1,7 +1,7 @@
 package token
 
 // This is a simple package for go that generates randomized base62 encoded tokens based on a single integer.
-// It's ideal for shorturl services or for semi-secured randomized api primary keys.
+// It's ideal for short url services or for semi-secured randomized api primary keys.
 //
 // How it Works
 //
